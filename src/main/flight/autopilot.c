@@ -68,12 +68,13 @@ void altitudeControl(float targetAltitudeCm, float taskIntervalS, float vertical
     const float altitudeF = targetAltitudeStep * altitudePidCoeffs.Kf;
     
     float throttleOffset = altitudeP + altitudeI - altitudeD + altitudeF;
-    
-    if (throttleOffset < 0) {
-        throttleOffset *= (float)(autopilotConfig()->altitude_Adj_Down_ratio) / 100.0f;
-    }
+
+    float sign = (throttleOffset < 0.0f) ? -1.0f : 1.0f;
+    // get the square root of the throttle offset to make the thrust curve more linear
+    throttleOffset = sign * sqrtf(fabsf(throttleOffset));
 
     const float hoverOffset = autopilotConfig()->hover_throttle - PWM_RANGE_MIN;
+
     throttleOffset += hoverOffset;
 
     const float tiltMultiplier = 2.0f - fmaxf(getCosTiltAngle(), 0.5f);
